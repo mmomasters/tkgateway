@@ -1,5 +1,5 @@
 {
-    "gateway": "tkgateway.mooo.com",
+    "gateway": "tkgateway.mooo.com:9856",
     "lockers": {
         "1A": {
             "identifier": "3718",
