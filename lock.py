@@ -143,10 +143,23 @@ host = config["gateway"]
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: ./lock.py list|sync|update|status")
-        print("       ./lock.py <locker> <action>")
-        print("Locker actions: open, close, calibrate, status, sync, update")
-        print("Gateway actions: list, sync, update, status")
+        print("Usage:")
+        print("  ./lock.py <gateway_command>")
+        print("  ./lock.py <locker_name> <locker_action>")
+        print("")
+        print("Gateway commands:")
+        print("  ./lock.py list       - Search for all lockers (GET /lockers)")
+        print("  ./lock.py sync       - Synchronize gateway (GET /synchronize)")
+        print("  ./lock.py update     - Update gateway (POST /update)")
+        print("  ./lock.py status     - Gateway status (GET /status)")
+        print("")
+        print("Locker actions:")
+        print("  ./lock.py <locker> open       - Open locker (POST /open)")
+        print("  ./lock.py <locker> close      - Close locker (POST /close)")
+        print("  ./lock.py <locker> calibrate  - Calibrate locker (POST /calibrate)")
+        print("  ./lock.py <locker> status     - Get locker status (POST /locker_status)")
+        print("  ./lock.py <locker> sync       - Synchronize locker (POST /locker/synchronize)")
+        print("  ./lock.py <locker> update     - Update locker (POST /locker/update)")
         sys.exit(1)
 
     gw = Gateway(host)
