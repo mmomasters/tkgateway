@@ -165,6 +165,7 @@ if __name__ == "__main__":
         print("")
         print("Gateway commands:")
         print("  ./lock.py list       - Search for all lockers (GET /lockers)")
+        print("  ./lock.py search     - Search for all lockers (alias for 'list')")
         print("  ./lock.py sync       - Synchronize gateway (GET /synchronize)")
         print("  ./lock.py update     - Update gateway (POST /update)")
         print("  ./lock.py status     - Gateway status (GET /status)")
@@ -182,7 +183,7 @@ if __name__ == "__main__":
 
     arg1 = sys.argv[1]
 
-    if arg1 == "list":
+    if arg1 == "list" or arg1 == "search":
         gw.search()
     elif arg1 in ["sync", "update", "status"]:
         # Gateway wide
