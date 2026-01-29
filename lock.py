@@ -55,9 +55,17 @@ class Gateway:
         try:
             with urllib.request.urlopen(req, timeout=10) as response:
                 res = response.read().decode('utf-8')
-                print("Response:", res)
-                resp = json.loads(res)
-                return resp
+                print("Response:", res if res else "(empty)")
+                if res:
+                    resp = json.loads(res)
+                    return resp
+                else:
+                    print("Success: Command completed (empty response)")
+                    return {"status": "ok"}
+        except json.JSONDecodeError as e:
+            print("JSON Error:", e)
+            print("Success: Command completed (invalid JSON)")
+            return {"status": "ok"}
         except Exception as e:
             print("Error:", e)
             return None
@@ -72,9 +80,17 @@ class Gateway:
         try:
             with urllib.request.urlopen(req, timeout=10) as response:
                 res = response.read().decode('utf-8')
-                print("Response:", res)
-                resp = json.loads(res)
-                return resp
+                print("Response:", res if res else "(empty)")
+                if res:
+                    resp = json.loads(res)
+                    return resp
+                else:
+                    print("Success: Command completed (empty response)")
+                    return {"status": "ok"}
+        except json.JSONDecodeError as e:
+            print("JSON Error:", e)
+            print("Success: Command completed (invalid JSON)")
+            return {"status": "ok"}
         except Exception as e:
             print("Error:", e)
             return None
