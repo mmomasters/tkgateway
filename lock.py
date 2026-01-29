@@ -10,7 +10,7 @@ import urllib.request
 import urllib.parse
 
 class Gateway:
-    def __init__(self, host="192.168.0.129", debug=False):
+    def __init__(self, host, debug=False):
         self.debug = debug
         self.host = host
 
