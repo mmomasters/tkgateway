@@ -1,0 +1,21 @@
+{
+    "gateway": "192.168.0.129",
+    "lockers": {
+        "1A": {
+            "identifier": "YOUR_IDENTIFIER",
+            "code": "YOUR_SHARE_CODE"
+        },
+        "1B": {
+            "identifier": "YOUR_IDENTIFIER",
+            "code": "YOUR_SHARE_CODE"
+        },
+        "1C": {
+            "identifier": "YOUR_IDENTIFIER",
+            "code": "YOUR_SHARE_CODE"
+        },
+        "1D": {
+            "identifier": "YOUR_IDENTIFIER",
+            "code": "YOUR_SHARE_CODE"
+        }
+    }
+}

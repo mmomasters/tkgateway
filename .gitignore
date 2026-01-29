@@ -1,0 +1,2 @@
+# Keep sensitive credentials out of version control
+config.json

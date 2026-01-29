@@ -4,27 +4,41 @@ This script allows controlling TheKeys smart locks via the gateway.
 
 ## Installation
 
-Transfer both `lock.py` and `config.json` to your Raspberry Pi. Run both files in the same directory.
+1. Clone or download this repository
+2. Copy `config.example.json` to `config.json`:
+   ```bash
+   cp config.example.json config.json
+   ```
+3. Edit `config.json` with your gateway address and locker credentials (see Configuration below)
+4. Transfer both `lock.py` and `config.json` to your Raspberry Pi:
+   ```bash
+   scp lock.py config.json kolna@raspberrypi:~/
+   ssh kolna@raspberrypi
+   chmod +x lock.py
+   ```
 
-```bash
-scp lock.py config.json kolna@raspberrypi:~/
-sesh kolna@raspberrypi
-chmod +x lock.py
-```
+**Note:** `config.json` is gitignored to keep your credentials safe. Only `config.example.json` is tracked in the repository.
 
 ## Configuration
 
-Edit `config.json` to add/change gateway IP and locker identifiers/codes.
+Edit `config.json` (not the example file) to add your gateway address and locker identifiers/codes.
+
+The gateway address can be either a local IP address (e.g., `192.168.0.129`) or a domain name with port (e.g., `gateway.example.com:9856`).
+
+See `config.example.json` for the template structure:
 
 ```json
 {
     "gateway": "192.168.0.129",
     "lockers": {
         "1A": {
-            "identifier": "3718",
-            "code": "dD0ahvPDpKmQxazp"
+            "identifier": "YOUR_IDENTIFIER",
+            "code": "YOUR_SHARE_CODE"
+        },
+        "1B": {
+            "identifier": "YOUR_IDENTIFIER",
+            "code": "YOUR_SHARE_CODE"
         }
-        ...
     }
 }
 ```
@@ -86,10 +100,10 @@ Available actions:
 ## Requirements
 
 - Python 3
-- Network access to the gateway IP (default 192.168.0.129)
+- Network access to the gateway address (configured in config.json)
 
 ## Troubleshooting
 
-- Ensure gateway IP is correct in config.json
+- Ensure gateway address is correct in config.json
 - Share codes must be paired via the TheKeys app/website
 - Locker firmware v57+ required for real-time status
