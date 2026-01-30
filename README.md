@@ -30,6 +30,7 @@ See `config.example.json` for the template structure:
 ```json
 {
     "gateway": "192.168.0.129",
+    "rate_limit_delay": 1.0,
     "lockers": {
         "1A": {
             "identifier": "YOUR_IDENTIFIER",
@@ -42,6 +43,17 @@ See `config.example.json` for the template structure:
     }
 }
 ```
+
+### Rate Limiting Configuration
+
+The `rate_limit_delay` parameter controls the minimum delay (in seconds) between requests to prevent overloading the gateway server. Default is 1.0 second if not specified.
+
+- **Recommended values:**
+  - Local network: `0.5` to `1.0` seconds
+  - Remote server: `1.0` to `2.0` seconds
+  - Slow or busy server: `2.0+` seconds
+
+Run `./benchmark.py` to test your gateway and get personalized recommendations.
 
 ## Usage
 
@@ -97,9 +109,55 @@ Available actions:
 - **0**: Success
 - Other codes: Check gateway logs or wiki for errors
 
+## Benchmarking and Performance Testing
+
+### Benchmark Tool
+
+Before using the gateway extensively, it's recommended to benchmark your server's response times:
+
+```bash
+./benchmark.py                    # Uses gateway from config.json
+./benchmark.py 192.168.0.129      # Specify gateway address
+./benchmark.py gateway.local 10   # Specify address and iterations
+```
+
+The benchmark tool will:
+- Measure response times for common endpoints
+- Generate statistics (average, median, min, max, standard deviation)
+- Provide personalized rate limiting recommendations
+- Save detailed results to a JSON report file
+
+**Example output:**
+```
+⏱️  Response Time Statistics:
+   Average:    0.523s
+   Median:     0.501s
+   Fastest:    0.445s
+   Slowest:    0.678s
+
+💡 Rate Limiting Recommendations:
+   • Minimum delay between requests: 1.05s
+   • Maximum safe request rate: 0.95 requests/second
+```
+
+### Gateway Discovery Tool
+
+Scan for available ports and endpoints with built-in rate limiting:
+
+```bash
+./discover.py <hostname>           # Uses default 0.3s delay
+./discover.py gateway.local 0.5    # Custom 0.5s delay between requests
+```
+
+Features:
+- Scans common ports (80, 443, 8080, 9856, etc.)
+- Tests known API endpoints
+- Rate-limited to prevent server overload (configurable)
+- Reduced concurrent workers (max 3) for safer scanning
+
 ## Requirements
 
-- Python 3
+- Python 3 (with standard library)
 - Network access to the gateway address (configured in config.json)
 
 ## Troubleshooting
@@ -107,3 +165,30 @@ Available actions:
 - Ensure gateway address is correct in config.json
 - Share codes must be paired via the TheKeys app/website
 - Locker firmware v57+ required for real-time status
+- If requests are timing out or failing:
+  - Run `./benchmark.py` to check server response times
+  - Increase `rate_limit_delay` in config.json
+  - Check network connectivity to the gateway
+- If receiving errors about "too many requests":
+  - Increase `rate_limit_delay` to 2.0 or higher
+  - Reduce concurrent operations
+
+## Rate Limiting Protection
+
+All scripts now include built-in rate limiting to prevent overloading the gateway server:
+
+### lock.py
+- Enforces minimum delay between requests (configured via `rate_limit_delay` in config.json)
+- Automatically throttles all operations (open, close, status, sync, etc.)
+- Silent operation unless debug mode is enabled
+
+### discover.py
+- Limited to 3 concurrent workers (reduced from 10)
+- 0.3s default delay between endpoint tests
+- 0.1s delay between port scans
+- Configurable via command line: `./discover.py hostname 0.5`
+
+### benchmark.py
+- Built-in 0.5s delay between benchmark iterations
+- Provides personalized rate limiting recommendations
+- Saves detailed performance reports for analysis

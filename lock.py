@@ -10,11 +10,42 @@ import urllib.request
 import urllib.parse
 
 class Gateway:
-    def __init__(self, host, debug=False):
+    def __init__(self, host, debug=False, rate_limit_delay=1.0, rate_limit_delay_light=0.2):
         self.debug = debug
         self.host = host
+        # Based on benchmark results (avg response time: 0.132s):
+        # - Heavy operations (open/close/calibrate): 1.0s delay (default)
+        # - Light operations (status/list): 0.2s delay for better performance
+        self.rate_limit_delay = rate_limit_delay  # Delay for heavy operations
+        self.rate_limit_delay_light = rate_limit_delay_light  # Delay for light operations
+        self.last_request_time = 0
 
+    def _rate_limit(self, light_operation=False):
+        """Enforce rate limiting between requests
+        
+        Args:
+            light_operation: If True, use lighter rate limit for discovery/status endpoints
+                           Based on benchmark: light operations can use 0.2s delay safely
+        """
+        current_time = time.time()
+        time_since_last_request = current_time - self.last_request_time
+        
+        # Choose appropriate delay based on operation type
+        delay = self.rate_limit_delay_light if light_operation else self.rate_limit_delay
+        
+        if time_since_last_request < delay:
+            sleep_time = delay - time_since_last_request
+            if self.debug:
+                op_type = "light" if light_operation else "heavy"
+                print(f"[Rate Limit] {op_type} operation - waiting {sleep_time:.2f}s before next request...")
+            time.sleep(sleep_time)
+        
+        self.last_request_time = time.time()
+    
     def action(self, action_type, identifier, code):
+        # Heavy operations: open, close, calibrate, locker_status
+        self._rate_limit(light_operation=False)
+        
         ts = str(int(time.time()))
         hm = hmac.new(code.encode("ascii"), ts.encode("ascii"), hashlib.sha256)
         hash = base64.b64encode(hm.digest()).decode('ascii')
@@ -46,6 +77,9 @@ class Gateway:
         return self.action("locker_status", identifier, code)
 
     def synchronize_locker(self, identifier):
+        # Light operation
+        self._rate_limit(light_operation=True)
+        
         # POST to /locker/synchronize with identifier only
         url = f"http://{self.host}/locker/synchronize"
         data = urllib.parse.urlencode({"identifier": identifier}).encode("ascii")
@@ -71,6 +105,9 @@ class Gateway:
             return None
 
     def update_locker(self, identifier):
+        # Light operation
+        self._rate_limit(light_operation=True)
+        
         # POST to /locker/update with identifier only
         url = f"http://{self.host}/locker/update"
         data = urllib.parse.urlencode({"identifier": identifier}).encode("ascii")
@@ -96,6 +133,9 @@ class Gateway:
             return None
 
     def synchronize(self):
+        # Light operation
+        self._rate_limit(light_operation=True)
+        
         # GET /synchronize
         url = f"http://{self.host}/synchronize"
         req = urllib.request.Request(url)
@@ -110,6 +150,9 @@ class Gateway:
             return None
 
     def update(self):
+        # Light operation
+        self._rate_limit(light_operation=True)
+        
         # POST /update with no data?
         url = f"http://{self.host}/update"
         req = urllib.request.Request(url, data=b"")
@@ -124,6 +167,9 @@ class Gateway:
             return None
 
     def status_gateway(self):
+        # Light operation - benchmark shows avg 0.132s response time
+        self._rate_limit(light_operation=True)
+        
         # GET /status
         url = f"http://{self.host}/status"
         req = urllib.request.Request(url)
@@ -138,6 +184,9 @@ class Gateway:
             return None
 
     def search(self):
+        # Light operation - benchmark shows avg 0.129s response time for /lockers
+        self._rate_limit(light_operation=True)
+        
         url = f"http://{self.host}/lockers"
         req = urllib.request.Request(url)
         try:
@@ -156,6 +205,11 @@ with open("config.json", "r") as f:
 
 lockers = config["lockers"]
 host = config["gateway"]
+# Get rate limit delays from config (based on benchmark results)
+# Heavy operations (open/close/calibrate): 1.0s recommended
+# Light operations (status/list): 0.2s recommended for better performance
+rate_limit = config.get("rate_limit_delay", 1.0)
+rate_limit_light = config.get("rate_limit_delay_light", 0.2)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -179,7 +233,7 @@ if __name__ == "__main__":
         print("  ./lock.py <locker> update     - Update locker (POST /locker/update)")
         sys.exit(1)
 
-    gw = Gateway(host)
+    gw = Gateway(host, rate_limit_delay=rate_limit, rate_limit_delay_light=rate_limit_light)
 
     arg1 = sys.argv[1]
 
