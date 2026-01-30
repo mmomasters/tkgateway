@@ -1,7 +1,9 @@
 {
     "gateway": "192.168.0.129",
-    "rate_limit_delay": 1.0,
-    "rate_limit_delay_light": 0.2,
+    "_comment_rate_limit_delay": "Delay between heavy operations (open/close/calibrate/status). Benchmark showed locker operations take ~3.6s avg. Recommended minimum: 5.0s to prevent overloading.",
+    "rate_limit_delay": 5.0,
+    "_comment_rate_limit_delay_light": "Delay between light operations (gateway status/list). Benchmark showed gateway operations take ~0.13s avg. Conservative setting: 1.0s for extra safety.",
+    "rate_limit_delay_light": 1.0,
     "lockers": {
         "1A": {
             "identifier": "YOUR_IDENTIFIER",

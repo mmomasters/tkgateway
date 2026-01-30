@@ -46,14 +46,19 @@ See `config.example.json` for the template structure:
 
 ### Rate Limiting Configuration
 
-The `rate_limit_delay` parameter controls the minimum delay (in seconds) between requests to prevent overloading the gateway server. Default is 1.0 second if not specified.
+The `rate_limit_delay` parameter controls the minimum delay (in seconds) between heavy operations (open/close/calibrate/status) to prevent overloading the gateway server.
 
-- **Recommended values:**
-  - Local network: `0.5` to `1.0` seconds
-  - Remote server: `1.0` to `2.0` seconds
-  - Slow or busy server: `2.0+` seconds
+The `rate_limit_delay_light` parameter controls the delay between light operations (gateway status/list queries).
 
-Run `./benchmark.py` to test your gateway and get personalized recommendations.
+- **Recommended values (based on benchmark results):**
+  - **Heavy operations** (`rate_limit_delay`): `5.0` seconds
+    - Locker operations take ~3.6s average to complete
+    - Recommended minimum: 5.0s prevents server overload
+  - **Light operations** (`rate_limit_delay_light`): `1.0` seconds
+    - Gateway queries take ~0.13s average
+    - Conservative 1.0s setting provides extra safety margin
+
+**Always run `./benchmark.py` to test your gateway and get personalized recommendations.**
 
 ## Usage
 
@@ -122,22 +127,42 @@ Before using the gateway extensively, it's recommended to benchmark your server'
 ```
 
 The benchmark tool will:
-- Measure response times for common endpoints
-- Generate statistics (average, median, min, max, standard deviation)
+- Measure response times for common gateway endpoints (status, list)
+- **NEW**: Test individual locker status commands (`./lock.py LOCKER_ID status`)
+- Automatically detect configured lockers from config.json
+- Generate separate statistics for gateway and locker endpoints
 - Provide personalized rate limiting recommendations
 - Save detailed results to a JSON report file
 
+**Features:**
+- Tests gateway endpoints: `/status`, `/lockers`
+- Tests locker status for each configured locker with proper HMAC authentication
+- Skips lockers with placeholder credentials automatically
+- Breaks down performance by endpoint type
+- 0.5s delay between requests to prevent server overload
+
 **Example output:**
 ```
-⏱️  Response Time Statistics:
-   Average:    0.523s
-   Median:     0.501s
-   Fastest:    0.445s
-   Slowest:    0.678s
+🔐 Testing Locker Status Commands
+(Simulating: ./lock.py LOCKER_ID status)
+
+📊 Testing: Locker 1A Status (POST /locker_status)
+  ✅ Request 1/5: 0.145s (HTTP 200)
+  ...
+
+⏱️  Response Time Statistics (All Endpoints):
+   Average:    0.132s
+   Median:     0.128s
+
+⏱️  Gateway Endpoints (status, list):
+   Average:    0.130s
+
+⏱️  Locker Status Endpoints (./lock.py LOCKER_ID status):
+   Average:    0.140s
 
 💡 Rate Limiting Recommendations:
-   • Minimum delay between requests: 1.05s
-   • Maximum safe request rate: 0.95 requests/second
+   • Minimum delay between requests: 1.00s
+   • For light operations (status/list): 0.20s delay
 ```
 
 ### Gateway Discovery Tool
