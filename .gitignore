@@ -1,2 +1,5 @@
 # Keep sensitive credentials out of version control
 config.json
+
+# Benchmark reports
+benchmark_report_*.json
